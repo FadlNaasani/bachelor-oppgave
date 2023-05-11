@@ -12,7 +12,7 @@ from kivy.uix.scrollview import ScrollView
 from kivymd.uix.label import MDLabel
 
 if platform == "android":
-    from android import request_permissions, Permission
+    from android.permissions import request_permissions, Permission
     request_permissions([
         Permission.CAMERA,
         Permission.WRITE_EXTERNAL_STORAGE,
@@ -38,7 +38,7 @@ class MainApp(MDApp):
             size_hint=(.5, .1))
 
         self.capture_button = MDRaisedButton(
-            text="Capture",
+            text="Image cropping",
             pos_hint={'center_x': .5, 'center_y': .5},
             size_hint = (.5, .1))
 
@@ -89,7 +89,7 @@ class MainApp(MDApp):
         reader = easyocr.Reader(['en'], gpu=False)  # bedre om du har gpu og raaskere
         result = reader.readtext(self.image_frame, detail=0, ycenter_ths=0.2, paragraph=False, width_ths=0.1)
         if not result:
-            self.layout1.add_widget(MDLabel(text='No text detected'))
+            self.layout1.add_widget(MDLabel(text='No text detected!'))
         #text_result= result.toString()
         text_res= ' '.join([str(elem) for elem in result])
 
@@ -105,7 +105,7 @@ class MainApp(MDApp):
         reader = easyocr.Reader(['en'], gpu=False)  # bedre om du har gpu og raaskere
         result = reader.readtext(self.image_frame, detail=1, ycenter_ths=0.2, paragraph=False, width_ths=0.1)  # Matrise
         if not result:
-            self.layout1.add_widget(MDLabel(text='No text detected'))
+            self.layout1.add_widget(MDLabel(text='No text detected!'))
 
         i = 0
         for text in result:
