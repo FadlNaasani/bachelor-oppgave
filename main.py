@@ -1,3 +1,4 @@
+import numpy
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -27,10 +28,10 @@ class MainApp(MDApp):
 
         self.layout1 = StackLayout(size_hint_y=None)
 
-        root = ScrollView(size_hint=(1, None), size=(75, 250))
+        scrollView = ScrollView(size_hint=(1, None), size=(75, 250))
         #root = ScrollView(size=(Window.width, Window.height))
 
-        root.add_widget(self.layout1)
+        scrollView.add_widget(self.layout1)
 
         self.start_button = MDRaisedButton(
             text="Start again",
@@ -61,7 +62,7 @@ class MainApp(MDApp):
         self.capture = cv2.VideoCapture(0)
         Clock.schedule_interval(self.load_video, 1.0 / 30.0)
         self.main_layout.add_widget(self.layout)
-        self.main_layout.add_widget(root)
+        self.main_layout.add_widget(scrollView)
         self.main_layout.add_widget(self.capture_button)
         self.main_layout.add_widget(self.get_text_button)
         return self.main_layout
@@ -86,7 +87,7 @@ class MainApp(MDApp):
         self.main_layout.remove_widget(self.capture_button)
         self.main_layout.remove_widget(self.get_text_button)
 
-        reader = easyocr.Reader(['en'], gpu=False)  # bedre om du har gpu og raaskere
+        reader = easyocr.Reader(['no'], gpu=False)  # bedre om du har gpu og raaskere
         result = reader.readtext(self.image_frame, detail=0, ycenter_ths=0.2, paragraph=False, width_ths=0.1)
         if not result:
             self.layout1.add_widget(MDLabel(text='No text detected!'))
@@ -101,12 +102,14 @@ class MainApp(MDApp):
         #self.layout.clear_widgets()
         self.main_layout.remove_widget(self.capture_button)
         self.main_layout.remove_widget(self.get_text_button)
-
-        reader = easyocr.Reader(['en'], gpu=False)  # bedre om du har gpu og raaskere
-        result = reader.readtext(self.image_frame, detail=1, ycenter_ths=0.2, paragraph=False, width_ths=0.1)  # Matrise
+        # bedre om du har gpu og raaskere
+        reader = easyocr.Reader(['en'], gpu=False)
+        result = reader.readtext(self.image_frame,
+                                 detail=1, ycenter_ths=0.2,
+                                 paragraph=False, width_ths=0.1) # Matrise
         if not result:
-            self.layout1.add_widget(MDLabel(text='No text detected!'))
-
+            self.layout1.add_widget(MDLabel
+                                    (text='No text detected!'))
         i = 0
         for text in result:
             i = 1 + i
@@ -116,19 +119,23 @@ class MainApp(MDApp):
             y2 = p2[1]
             x1 = p1[0]
             x2 = p2[0]
-            # cpx = text[0][2]
-            detectedText = text[1]
-            croppeed = self.image_frame[y1:y2, x1:x2]
+            t= type(y1)
+            if type(y1) !=numpy.int64:
+                self.layout1.add_widget(MDLabel
+                                        (text='teksten er veldig skeiv!!'))
+                break
 
-            buffer = cv2.flip(croppeed, 0).tobytes()
-            texture = Texture.create(size=(croppeed.shape[1], croppeed.shape[0]), colorfmt='bgr')
-            texture.blit_buffer(buffer, colorfmt='bgr', bufferfmt='ubyte')
-            # image = tk.PhotoImage(data=im_b64)
-            imT = Image(size_hint_y=None, size_hint_x=None)
-            imT.texture = texture
-            # self.pixels = croppeed.pixels
-            #res = Image(source="IMG_{}.png".format(i), size_hint_y=None, size_hint_x=None)
-            self.layout1.add_widget(imT)
+            else:
+                # cpx = text[0][2]
+                detectedText = text[1]
+                croppeed = self.image_frame[(y1):(y2),(x1):(x2)]
+                buffer = cv2.flip(croppeed, 0).tobytes()
+                texture = Texture.create(size=(croppeed.shape[1],
+                                               croppeed.shape[0]), colorfmt='bgr')
+                texture.blit_buffer(buffer, colorfmt='bgr', bufferfmt='ubyte')
+                imT = Image(size_hint_y=None, size_hint_x=None)
+                imT.texture = texture
+                self.layout1.add_widget(imT)
         self.main_layout.add_widget(self.start_button)
 
 
